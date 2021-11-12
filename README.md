@@ -47,7 +47,7 @@ Requisitos Funcionais:
 * Criar modelos das tabelas: `chat`, `user`, `message` e suas relações no banco de dados do usuário;
 * Criar modelos das tabelas: `user` e `pb_key` e suas relações no banco de dados do usuário.
 
-#### Como usuário, gostaria de ter acesso a interface gráfica de: [[ Nathan ]]
+#### Como usuário, gostaria de ter acesso a interface gráfica de: [[ Nathan, LUIZ ]]
 * Uma página inicial, contendo minha lista de amigos;
 * Uma página que contenha a minha lista de conversas e que me permita me levar até uma conversa com um clique;
 * Uma página de conversa, pela qual possa enviar uma mensagem para o meu remetente;
@@ -69,7 +69,7 @@ Requisitos Funcionais:
 * Implementar essa fila de serviços para ser ativada quando o usuário der ping;
 * Armazenar de forma segura os dados das mensagens.
 
-#### Como usuário, gostaria de poder pesquisar por grupos de conversa com base em tags ou categorias:
+#### Como usuário, gostaria de poder pesquisar por grupos de conversa com base em tags ou categorias: [[ LUIZ ]]
 * Implementar as buscas nos modelos de banco de dados para isso;
 * Permitir a criação de grupos de usuários a partir de criptografia todos-para-todos;
 * Estudar outros protocolos possíveis, p.ex Matrix.
