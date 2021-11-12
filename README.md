@@ -9,7 +9,6 @@ Nome: Nathan Nogueira | Matrícula: 2017086023
 Nome: Victor Vieira | Matrícula: 2018054346  
 
 ## Tema: Rede Social para Porteiros
-Requisitos Funcionais:
 
 ### Requisitos Funcionais:
 
@@ -42,12 +41,13 @@ Requisitos Funcionais:
 
 ### Backlog do Sprint
 
-#### Como desenvolvedor, gostaria de ter um ORM do banco de dados do porta aberta: [[ CAIO ]]
+#### Como desenvolvedor, gostaria de ter um ORM do banco de dados do porta aberta: [[ CAIO, VICTOR ]]
 * Estudar a implementação desse banco de dados com SQLAlchemy e Redis;
 * Criar modelos das tabelas: `chat`, `user`, `message` e suas relações no banco de dados do usuário;
-* Criar modelos das tabelas: `user` e `pb_key` e suas relações no banco de dados do usuário.
+* Criar modelos das tabelas: `user` e `pb_key` e suas relações no banco de dados do usuário;
+* Traduzir banco de dados do Flask-Alchemy para SQLAlchemy.
 
-#### Como usuário, gostaria de ter acesso a interface gráfica de: [[ Nathan, LUIZ ]]
+#### Como usuário, gostaria de ter acesso a interface gráfica de: [[ NATHAN, LUIZ ]]
 * Uma página inicial, contendo minha lista de amigos;
 * Uma página que contenha a minha lista de conversas e que me permita me levar até uma conversa com um clique;
 * Uma página de conversa, pela qual possa enviar uma mensagem para o meu remetente;
@@ -59,12 +59,12 @@ Requisitos Funcionais:
 * Utilizar assinatura de chaves ED para autenticar a sessão do usuário;
 * Implementar o protocolo de criptografia Double Ratchet com um arquivo para teste local.
 
-#### Como desenvolvedor, quero implementar a conexão entre o servidor e o usuário em tempo real: [[ CAIO ]]
+#### Como desenvolvedor, quero implementar a conexão entre o servidor e o usuário em tempo real: [[ CAIO, VICTOR ]]
 * Estudar a respeito das ferramentas utilizadas, principalmente websockets;
 * Implementar um sistema rudimentar de comunicação utilizando uma REST API, com Flask;
 * Atualizar a comunicação para utilizar de WebSockets, um protocolo mais interessante para comunicação em tempo real.
 
-#### Como desenvolvedor, gostaria que mensagens com erro sejam re-enviadas após certo tempo: [[ ? ]]
+#### Como desenvolvedor, gostaria que mensagens com erro sejam re-enviadas após certo tempo: [[ VICTOR ]]
 * Analisar a melhor abordagem para isso, passando por ferramentas como Redis ou outros bancos de dados;
 * Implementar essa fila de serviços para ser ativada quando o usuário der ping;
 * Armazenar de forma segura os dados das mensagens.
