@@ -17,7 +17,7 @@ class Chat (db.Model):
 
     # Chat ID from other users
     # TODO -> Make it a list or a hash to unify
-    chat_id         : db.Integer = db.Column(db.Integer, nullable=False)
+    chat_id         : db.Integer = db.Column(db.Integer, nullable=True)
 
     # Extra Information
     description     : db.Text = db.Column(db.Text(500), nullable=True)

@@ -9,8 +9,8 @@ from cryptography.hazmat.primitives.kdf.hkdf import HKDF
 from cryptography.hazmat.primitives import serialization
 from cryptography.hazmat.primitives.asymmetric.ed25519 import Ed25519PrivateKey, Ed25519PublicKey
 from cryptography.hazmat.primitives.asymmetric.x25519 import X25519PrivateKey, X25519PublicKey
+from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
 from cryptography.hazmat.backends import default_backend
-from Crypto.Cipher import AES
 from pathlib import Path
 
 base_path = Path(__file__).resolve().parent.parent.parent
@@ -126,17 +126,21 @@ def snd_msg (
 ) -> tuple[bytes, PublicKey]:
     dh_ratchet_rotation_send(ratchets, pbkey)
     key, init_vector = ratchets["snd_ratchet"].next()
-    cipher = AES.new(key, AES.MODE_CBC, init_vector).encrypt(pad(msg))
+    cipher = Cipher(algorithms.AES(key), modes.CBC(init_vector))
+    encryptor = cipher.encryptor()
+    enc_msg = encryptor.update(pad(msg)) + encryptor.finalize()
 
-    return cipher, public_key(ratchets["dh_ratchet"])
+    return enc_msg, public_key(ratchets["dh_ratchet"])
 
 def rcv_msg (
-    ratchets: dict[str, Ratchet], pbkey: bytes, cipher: bytes
+    ratchets: dict[str, Ratchet], pbkey: bytes, enc_msg: bytes
 ) -> bytes:
     dh_ratchet_rotation_receive(ratchets, pbkey)
     key, init_vector = ratchets["rcv_ratchet"].next()
+    cipher = Cipher(algorithms.AES(key), modes.CBC(init_vector))
+    decryptor = cipher.decryptor()
 
-    return unpad(AES.new(key, AES.MODE_CBC, init_vector).decrypt(cipher))
+    return unpad(decryptor.update(enc_msg) + decryptor.finalize())
 
 def generate_private_key (name: str = None, sgn_key: bool = False) -> PrivateKey:
     pvt_key = X25519PrivateKey.generate() if not sgn_key else Ed25519PrivateKey.generate()
@@ -243,3 +247,8 @@ def clean_keys () -> None:
         if item.endswith(".pem"):
             os.remove(keys_path / item)
     shutil.rmtree(ratchets_path, ignore_errors=True)
+
+def clean_chat_keys (chat_id: int, user_id: int) -> None:
+    for item in os.listdir(keys_path):
+        if item.endswith(f"{chat_id}-{user_id}.pem"):
+            os.remove(keys_path / item)

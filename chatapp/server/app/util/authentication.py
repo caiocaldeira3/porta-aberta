@@ -2,29 +2,106 @@ import os
 
 from typing import Callable
 from functools import wraps
-from flask import json, request, Response, wrappers
+
+from flask import request, wrappers
+from flask_socketio import emit, ConnectionRefusedError
+
+from app.models.user import User
+from app.models.device import Device
+from app.models.public_keys import OPKey
 
 from app.util.crypto import verify_signed_message
 
-def unauthorized_request () -> wrappers.Response:
-    return Response(
-        response=json.dumps({
-            "status": "failed",
-            "msg": "It wasn't possible to authenticate the session"
-        }),
-        status=403,
-        mimetype="application/json"
-    )
+from app import db
 
 def authenticate_source () -> wrappers.Response:
     def wrapper (f: Callable) -> wrappers.Response:
         @wraps(f)
         def decorated(*args, **kwargs):
             if request.headers["Param-Auth"] == os.environ["CHAT_SECRET"]:
-                return f(*args, **kwargs)
+                return f(request.sid, *args, **kwargs)
 
             else:
-                return unauthorized_request()
+                emit("auth_response", {
+                    "status": "failed",
+                    "msg": "Unable to authenticate connection source"
+                })
+
+                raise ConnectionRefusedError
+
+        return decorated
+
+    return wrapper
+
+def ensure_user () -> wrappers.Response:
+    def wrapper (f: Callable) -> wrappers.Response:
+        @wraps(f)
+        def decorated(*args, **kwargs):
+            if request.headers.get("Signed-Message", None) is not None:
+                try:
+                    sid, data = args
+                    user = User.query.filter_by(id=data["telephone"]).one()
+                    sgn_message = request.headers["Signed-Message"]
+                    verify_signed_message(user, sgn_message)
+
+                    device = Device(socket_id=sid)
+                    user.devices.append(device)
+
+                    db.session.add(user)
+                    db.session.add_all(user.devices)
+                    db.session.commit()
+
+                    user = User.query.filter_by(id=data["telephone"]).one()
+                    print(user.devices)
+
+
+                    return f(*args, **kwargs)
+
+                except Exception as exc:
+                    print(exc)
+                    emit("auth_response", {
+                        "status": "failed",
+                        "msg": "Unable to authenticate signed message"
+                    })
+
+                    raise ConnectionRefusedError
+
+            else:
+                try:
+                    sid, auth_data = args
+
+                    user = User(
+                        name=auth_data["name"],
+                        id_key=auth_data["id_key"],
+                        sgn_key=auth_data["sgn_key"],
+                        ed_key=auth_data["ed_key"],
+                        devices=[ Device(socket_id=sid) ],
+                        opkeys=[
+                            OPKey(key_id=opkey["id"], opkey=opkey["key"])
+                            for opkey in auth_data["opkeys"]
+                        ],
+                        telephone=auth_data.get("telephone"),
+                        email=auth_data.get("email", None),
+                        description=auth_data.get("description", None)
+                    )
+
+                    db.session.add(user)
+                    db.session.add_all(user.devices)
+                    db.session.add_all(user.opkeys)
+                    db.session.commit()
+
+                    return f(sid, {
+                        "telephone": user.telephone
+                    }, **kwargs)
+
+                except Exception as exc:
+                    print(exc)
+                    emit("auth_response", {
+                        "status": "failed",
+                        "msg": "Unable to create a new user"
+                    })
+
+                    raise ConnectionRefusedError
 
         return decorated
 
@@ -35,17 +112,23 @@ def authenticate_user () -> wrappers.Response:
         @wraps(f)
         def decorated(*args, **kwargs):
             try:
-                telephone = json.loads(request.json)["telephone"]
-                sgn_message = request.headers["Signed-Message"]
+                sid, data = args
+                sgn_message = data.pop("Signed-Message")
+                user = User.query.filter_by(id=data.pop("telephone")).one()
 
-                if verify_signed_message(telephone, sgn_message):
-                    return f(*args, **kwargs)
+                data = data.pop("body")
+                verify_signed_message(user, sgn_message)
 
-                else:
-                    return unauthorized_request()
+                return f(sid, data, **kwargs)
 
             except Exception as exc:
-                return unauthorized_request()
+                print(exc)
+                emit("auth_response", {
+                    "status": "failed",
+                    "msg": "Unable to authenticate signed message"
+                })
+
+                raise ConnectionRefusedError
 
         return decorated
 

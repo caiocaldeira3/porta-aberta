@@ -1,5 +1,4 @@
 import os
-import sys
 import json
 import dotenv
 import requests
@@ -8,7 +7,6 @@ import regex as re
 import dataclasses as dc
 
 from pathlib import Path
-from sqlalchemy.orm import exc
 from werkzeug.security import generate_password_hash
 from cryptography.hazmat.primitives.asymmetric.x25519 import X25519PrivateKey
 from cryptography.hazmat.primitives.asymmetric.ed25519 import Ed25519PrivateKey
@@ -22,12 +20,12 @@ from app.models.user import User
 from app.models.chat import Chat
 
 from app import db
-from app.util.json_encoder import ComplexEncoder
+from app import sio
 
 @dc.dataclass()
 class Api:
 
-    base_url: str = dc.field(init=False, default="http://0.0.0.0:8080")
+    base_url: str = dc.field(init=False, default="http://0.0.0.0:5000")
     headers_client: dict = dc.field(init=False, default=None)
     headers_user: dict = dc.field(init=False, default=None)
     device_url: str = dc.field(init=False, default=None)
@@ -38,24 +36,35 @@ class Api:
     ed_key: Ed25519PrivateKey = dc.field(init=False, default=None)
 
     def __init__ (self, logged_in: str = None, port: str = None) -> None:
-        self.device_url = f"http://0.0.0.0:{port if port is not None else 3030}"
+        self.device_url = f"http://192.168.1.43:{port if port is not None else 3030}"
         self.headers_client = {
             "Param-Auth": os.environ["CHAT_SECRET"]
         }
 
         if logged_in == "logged_in" and os.environ["USER_ID"] != -1:
-            self.user_id = os.environ["USER_ID"]
-            self.id_key = crypto.load_private_key("id_key")
-            self.sgn_key = crypto.load_private_key("sgn_key")
-            self.ed_key = crypto.load_private_key("ed_key")
-
-            self.update_header_user()
-            if not self.ping():
-                raise Exception
+            self.login()
+            self.ping()
 
         elif logged_in == "logged_in":
             print("Api has not any session stored")
             raise Exception
+
+    def login (self) -> None:
+        self.user_id = os.environ["USER_ID"]
+        self.id_key = crypto.load_private_key("id_key")
+        self.sgn_key = crypto.load_private_key("sgn_key")
+        self.ed_key = crypto.load_private_key("ed_key")
+
+        self.update_header_user()
+
+    def logout (self) -> None:
+        self.user_id = None
+        self.id_key = None
+        self.sgn_key = None
+        self.ed_key = None
+
+        self.update_header_user(logout=True)
+        self._update_enviroment("USER_ID", -1)
 
     def _update_enviroment (self, key: str, value: str) -> None:
         environ_regex = re.compile(f"(?<={key}=).*")
@@ -64,28 +73,29 @@ class Api:
             for line in env:
                 print(environ_regex.sub(f"{value}", line), end="")
 
-    def update_header_user (self) -> None:
-        self.headers_user = {
-            "Signed-Message": crypto.sign_message(self.ed_key)
-        } | self.headers_client
+    def update_header_user (self, logout: bool = False) -> None:
+        if logout:
+            self.headers_user.pop("Signed-Message", None)
 
-    def ping (self) -> bool:
+        else:
+            self.headers_user = {
+                "Signed-Message": crypto.sign_message(self.ed_key)
+            } | self.headers_client
+
+    def ping (self) -> None:
         try:
             user = User.query.filter_by(id=self.user_id).one()
-            response = requests.put(
-                url=f"{self.base_url}/auth/ping/",
-                json=json.dumps({
-                    "telephone": user.telephone
-                }),
+            sio.connect(
+                self.base_url,
+                auth={ "telephone": user.telephone },
                 headers=self.headers_user
             )
 
-            resp_json = response.json()
-            if resp_json["status"] == "ok":
-                return True
+        except Exception as exc:
+            print(exc)
 
-        except:
-            return False
+            self.logout()
+            raise Exception
 
     def signup (
         self, name: str, telephone: str, password: str,
@@ -95,7 +105,6 @@ class Api:
         self.sgn_key = crypto.generate_private_key("sgn_key")
         self.ed_key = crypto.generate_private_key("ed_key", sgn_key=True)
 
-        address = self.device_url
         id_key = crypto.public_key(self.id_key)
         sgn_key = crypto.public_key(self.sgn_key)
         ed_key = crypto.public_key(self.ed_key)
@@ -105,91 +114,74 @@ class Api:
         ]
 
         try:
-            response = requests.post(
-                url=f"{self.base_url}/auth/signup/",
-                headers=self.headers_client,
-                json=json.dumps({
+            sio.connect(
+                self.base_url,
+                auth={
                     key: value
                     for key, value in vars().items()
                     if key not in [ "self", "password" ] and value is not None
-                }, cls=ComplexEncoder)
+                }, headers=self.headers_client
             )
 
-            resp_json = response.json()
-            if resp_json["status"] == "ok":
-                user = User(
-                    name=name,
-                    telephone=telephone,
-                    password=generate_password_hash(password),
-                    email=email,
-                    description=description
-                )
-                db.session.add(user)
-                db.session.commit()
+            user = User(
+                name=name,
+                telephone=telephone,
+                password=generate_password_hash(password),
+                email=email,
+                description=description
+            )
+            db.session.add(user)
+            db.session.commit()
 
-                self.user_id = user.id
-                self.update_header_user()
-                self._update_enviroment("USER_ID", self.user_id)
-
-                return resp_json["data"]
+            self.user_id = user.id
+            self.update_header_user()
+            self._update_enviroment("USER_ID", self.user_id)
 
         except Exception as exc:
+            print(exc)
+            User.query.filter_by(telephone=telephone).delete()
+            db.session.commit()
+
             crypto.clean_keys()
+
             raise exc
+
+    def sign_message (self) -> str:
+        return crypto.sign_message(self.ed_key)
 
     def create_chat (
         self, name: str, users: list[str], description: str = None
     ) -> None:
         try:
             owner = User.query.filter_by(id=self.user_id).one()
-            last_chat = Chat.query.order_by(Chat.id.desc()).first()
-            eph_key = crypto.generate_private_key()
-            dh_ratchet = crypto.generate_private_key()
 
-            response = requests.post(
-                url=f"{self.base_url}/user/create-chat/",
-                headers=self.headers_user,
-                json=json.dumps({
+            db_users = [ User(telephone=user) for user in users ]
+            chat = Chat(
+                name=name,
+                users=db_users,
+                description=description
+            )
+            db.session.add_all(db_users)
+            db.session.add(chat)
+            db.session.commit()
+
+            eph_key = crypto.generate_private_key(f"eph-{chat.id}-{self.user_id}")
+            dh_ratchet = crypto.generate_private_key(f"dhr-{chat.id}-{self.user_id}")
+
+            sio.emit("create-chat", {
+                "Signed-Message": self.sign_message(),
+                "telephone": owner.telephone,
+                "body": {
+                    "owner": {
+                        "telephone": owner.telephone,
+                        "chat_id": chat.id
+                    },
                     "name": name,
-                    "telephone": owner.telephone,
-                    "chat_id": 1 if last_chat is None else last_chat.id + 1,
                     "users": users,
                     "dh_ratchet": crypto.public_key(dh_ratchet),
-                    "EK": crypto.public_key(eph_key),
-                })
-            )
-
-            resp_json = response.json()
-            if resp_json["status"] == "ok":
-                data = resp_json["data"][0]
-
-                user = User.query.filter_by(telephone=data["telephone"]).first()
-                if user is None:
-                    user = User(name=data["name"], telephone=data["telephone"])
-
-                    db.session.add(user)
-                    db.session.commit()
-
-                chat = Chat(
-                    name = data["name"],
-                    users = [ user ],
-                    chat_id = data["chat_id"],
-                    description = data.get("description", None)
-                )
-                db.session.add(chat)
-                db.session.commit()
-
-                user_ratchet = data["keys"].pop("dh_ratchet")
-                user_keys = data["keys"]
-                root_ratchet = crypto.create_chat_encryption(
-                    { "IK": self.id_key, "EK": eph_key }, pb_keys=user_keys, sender=True
-                )
-
-                crypto.save_ratchet(chat.id, "dh_ratchet", dh_ratchet)
-                crypto.save_ratchet(chat.id, "user_ratchet", user_ratchet)
-                crypto.save_ratchet(chat.id, "root_ratchet", root_ratchet)
-
-                return chat.id
+                    "EK": crypto.public_key(eph_key)
+                },
+            })
 
         except Exception as exc:
             raise exc
@@ -226,6 +218,9 @@ class Api:
                 for ratchet_name, ratchet in ratchets.items():
                     crypto.save_ratchet(chat_id, ratchet_name, ratchet)
 
+            else:
+                print ("Message not delivered")
+
         except Exception as exc:
-            raise exc
             print("Message not delivered")
+            raise exc

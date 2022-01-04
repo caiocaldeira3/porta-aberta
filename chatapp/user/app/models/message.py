@@ -4,7 +4,7 @@ from app import db
 class Message (db.Model):
 
     __tablename__   : str = "message"
-    msg_id          : db.Integer = db.Column(db.Integer, primary_key=True)
+    id          : db.Integer = db.Column(db.Integer, primary_key=True)
 
     # Message Content
     message         : db.Text = db.Column(db.Text(500), nullable=False)
@@ -12,6 +12,6 @@ class Message (db.Model):
 
     user_id         : db.Integer = db.Column(db.Integer, db.ForeignKey("user.id"))
     chat_id         : db.Integer = db.Column(db.Integer, db.ForeignKey("chat.id"))
-    
+
     def __repr__ (self) -> str:
         return f"<Message from {self.sender.name}>"

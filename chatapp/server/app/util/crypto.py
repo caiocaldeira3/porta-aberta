@@ -20,13 +20,6 @@ def load_public_key (pbkey: str, sgn_key: bool = False) -> PublicKeys:
     else:
         return X25519PublicKey.from_public_bytes(encode_b64(pbkey))
 
-def verify_signed_message (telephone: str, msg: str) -> bool:
-    try:
-        user = User.query.filter_by(telephone=telephone).one()
-        ed_pbkey = load_public_key(user.ed_key, sgn_key=True)
-        ed_pbkey.verify(signature=encode_b64(msg), data=b"It's me, Mario")
-
-        return True
-
-    except:
-        return False
+def verify_signed_message (user: User, msg: str) -> bool:
+    ed_pbkey = load_public_key(user.ed_key, sgn_key=True)
+    ed_pbkey.verify(signature=encode_b64(msg), data=b"It's me, Mario")
