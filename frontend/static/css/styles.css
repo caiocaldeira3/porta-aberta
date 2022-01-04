@@ -1,0 +1,47 @@
+body {
+	background-image: linear-gradient(to right, #333d39 , #1d2622);
+	background-position: center;
+	font-family: 'Lexend Deca', sans-serif;
+}
+
+input{
+	font-family: 'Lexend Deca', sans-serif;	
+}
+
+.login{
+	background-color: white;
+	margin: 0;
+	position: absolute;
+	top: 50%;
+	left: 50%;
+	-ms-transform: translate(-50%, -50%);
+	transform: translate(-50%, -50%);
+	border: 2px solid white;
+	border-radius: 8px;
+	padding: 12px;
+}
+
+.header_logo{
+	width: 108px;
+	height: 108px;
+}
+
+.header{
+	border-bottom: 2px LightSlateGrey solid;
+	margin-top: 0px;
+}	
+
+.footer {
+    position: fixed;
+    bottom: 0;
+	left: 50%;
+	transform: translate(-50%, -50%);
+	text-align: center;
+	font-size: 10px;
+	color: LightSlateGrey;
+}
+
+.main_title {
+	text-align: center;
+	font-family: 'Lexend Deca', sans-serif;
+}
