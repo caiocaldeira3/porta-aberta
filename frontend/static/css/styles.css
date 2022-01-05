@@ -8,17 +8,25 @@ input{
 	font-family: 'Lexend Deca', sans-serif;	
 }
 
-.login{
+button{
+	font-family: 'Lexend Deca', sans-serif;	
+	font-size: 16px;
+}
+
+.window{
 	background-color: white;
-	margin: 0;
+	margin: 8px;
+	border: 2px solid white;
+	border-radius: 8px;
+	padding: 12px;
+}
+
+.center{
 	position: absolute;
 	top: 50%;
 	left: 50%;
 	-ms-transform: translate(-50%, -50%);
 	transform: translate(-50%, -50%);
-	border: 2px solid white;
-	border-radius: 8px;
-	padding: 12px;
 }
 
 .header_logo{
@@ -26,7 +34,29 @@ input{
 	height: 108px;
 }
 
-.header{
+.side-by-side{
+    display:flex;
+	align-items: center;
+    flex-direction:row;
+justify-content: space-around;
+	width:100%;
+	height:100%;
+}
+
+.middle_window{
+	width: 50%;
+	height: 500px;
+}
+
+.left_window{
+	width: 25%;	
+}
+
+.right_window{
+	width: 25%;
+}
+
+.bottom_line{
 	border-bottom: 2px LightSlateGrey solid;
 	margin-top: 0px;
 }	
@@ -44,4 +74,46 @@ input{
 .main_title {
 	text-align: center;
 	font-family: 'Lexend Deca', sans-serif;
+}
+
+.conversa{
+	padding: 8px;
+	height: 48px;
+	border-radius: 8px;	
+	background-color: #34eb9b;
+	margin-top: 8px;
+}
+
+.perfil{
+	padding-bottom: 8px;	
+	display:flex;
+	align-items: center;
+    flex-direction:row;
+	justify-content: space-around;
+}
+
+.miniature_photo{
+	width:64px; 
+	height:64px; 
+	background-color: #e1ebe7;
+	margin: -8px;
+	margin-left: -24px;
+	border-top-right-radius: 8px;
+	border-bottom-right-radius: 8px;
+	position: relative;
+	top: 12px;
+	left: 100%;
+	-ms-transform: translate(-50%, -50%);
+	transform: translate(-50%, -50%);
+}
+
+.welcome{
+	width:25%;
+	background-color: transparent;
+	border: 0px transparent solid;
+}
+
+.subtitulo{
+	font-size: 24px; 
+	color: #5d6569;">
 }
