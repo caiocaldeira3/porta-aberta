@@ -11,16 +11,24 @@ app.config['SECRET_KEY'] = 'password'
 def home():
     return render_template('home.html')
     
+##############################
 @app.route("/",methods=['GET', 'POST'])
 def index():
-    print("TAMO RODANDOAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA")
     if request.method == 'POST':
         email = request.form["user"]
         passwd = request.form["passwd"]
-        print("RODEIaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa")
-        return redirect(url_for('home'))
+        print(email)
+        return redirect(url_for('profile'))
 
     return render_template('index.html')
+######################3
+
+##############################
+@app.route("/profile",methods=['GET', 'POST'])
+def profile():
+    numero = 509
+    return render_template('profile.html',numero=numero)
+######################3
 
 if __name__ == '__main__':
     app.run(host='127.0.0.1', port=8080, debug=True)
