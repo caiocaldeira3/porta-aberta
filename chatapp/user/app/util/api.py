@@ -34,17 +34,17 @@ class Api:
     sgn_key: X25519PrivateKey = dc.field(init=False, default=None)
     ed_key: Ed25519PrivateKey = dc.field(init=False, default=None)
 
-    def __init__ (self, logged_in: str = None) -> None:
+    def __init__ (self, logged_in: bool = False) -> None:
         self.headers_client = {
             "Param-Auth": os.environ["CHAT_SECRET"]
         }
         self.headers_user = self.headers_client
 
-        if logged_in == "logged_in" and os.environ["USER_ID"] != -1:
+        if logged_in and os.environ["USER_ID"] != -1:
             self.login()
             self.ping()
 
-        elif logged_in == "logged_in":
+        elif logged_in:
             print("Api has not any session stored")
             raise Exception
 
@@ -80,6 +80,10 @@ class Api:
             self.headers_user = {
                 "Signed-Message": crypto.sign_message(self.ed_key)
             } | self.headers_client
+
+    def disconnect (self) -> None:
+        sio.disconnect()
+        self.logout()
 
     def ping (self) -> None:
         try:

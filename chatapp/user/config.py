@@ -1,4 +1,10 @@
 import os
+import dotenv
+
+from pathlib import Path
+
+base_path = Path(__file__).resolve().parent
+dotenv.load_dotenv(base_path / ".env", override=True)
 
 # Statement for enabling the development environment
 DEBUG = True

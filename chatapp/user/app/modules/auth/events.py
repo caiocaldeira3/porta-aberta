@@ -21,7 +21,7 @@ def handle_auth_response (resp: dict):
     else:
         api.logout()
 
-        if resp.get(["data"], None) is not None:
+        if resp.get("data", None) is not None:
             telephone = resp["data"]["telephone"]
 
             User.query.filter_by(telephone=telephone).delete()
