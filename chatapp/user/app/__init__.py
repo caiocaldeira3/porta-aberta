@@ -17,7 +17,6 @@ from flask_migrate import Migrate
 
 # Define the WSGI application object
 app = Flask(__name__)
-CORS(app)
 sio = socketio.Client()
 
 # Configurations
@@ -34,13 +33,11 @@ migrate = Migrate(app, db)
 #    return NotFoundError
 
 # Import a module / component using its blueprint handler variable (mod_auth)
-
 from app.util.api import Api
+api = Api(logged_in=sys.argv[1] if len(sys.argv) >= 2 else None)
 
-api = Api(
-    logged_in=sys.argv[1] if len(sys.argv) >= 2 else None,
-    port=sys.argv[2] if len(sys.argv) == 3 else None
-)
+import app.modules.auth.events
+import app.modules.user.events
 
 # Register blueprint(s)
 # ..

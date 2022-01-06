@@ -161,7 +161,12 @@ def save_private_key (name: str, pvtkey: PrivateKey) -> None:
 
         pem_file.write(f"{decode_b64(encoded_pvtkey)}")
 
-def save_ratchet (chat_id: int, ratchet_name: str, ratchet: Union[Ratchet, str]) -> None:
+def save_ratchet (
+    chat_id: int, ratchet_name: str, ratchet: Union[Ratchet, str], tmp: bool = False
+) -> None:
+    if tmp:
+        ratchet_name = f"tmp-{ratchet_name}"
+
     ensure_dir(ratchets_path / f"{chat_id}/{ratchet_name}" )
     if isinstance(ratchet, X25519PrivateKey):
         with open(ratchets_path / f"{chat_id}/{ratchet_name}.pem", "w") as pem_file:
@@ -183,6 +188,16 @@ def save_ratchet (chat_id: int, ratchet_name: str, ratchet: Union[Ratchet, str])
         with open(ratchets_path / f"{chat_id}/{ratchet_name}", "w") as pbk_file:
             pbk_file.write(f"{ratchet}")
 
+def delete_ratchet (chat_id: int, ratchet_name: str, tmp: bool = False) -> None:
+    file_name = f"tmp-{ratchet_name}" if tmp else ratchet_name
+    file_path = ratchets_path / f"{chat_id}/{file_name}"
+
+    if ratchet_name == "dh_ratchet":
+        file_path = f"{file_path}.pem"
+
+    if os.path.exists(file_path):
+        os.remove(file_path)
+
 def load_key_from_file (
     key_path: Path, key_name: str, method: str = "private", **kwargs
 ) -> Key:
@@ -201,16 +216,22 @@ def load_key_from_file (
         with open(key_path / f"{key_name}") as sym_file:
             return load_public_key(sym_file.readline(), **kwargs)
 
-def load_ratchets (chat_id: int) -> tuple[dict[str, Ratchet], bytes]:
+def load_ratchets (chat_id: int, tmp: bool = False) -> tuple[dict[str, Ratchet], bytes]:
     ratchets = dict()
     for ratchet_name, ratchet_method in ratchets_iter:
-        ratchets[ratchet_name] = load_key_from_file(
-            ratchets_path / f"{chat_id}",
-            ratchet_name,
-            ratchet_method
-        )
+        ratchet_name = f"tmp-{ratchet_name}" if tmp else ratchet_name
 
-    pbkey = ratchets.pop("user_ratchet")
+        try:
+            ratchets[ratchet_name] = load_key_from_file(
+                ratchets_path / f"{chat_id}",
+                ratchet_name,
+                ratchet_method
+            )
+
+        except FileNotFoundError:
+            pass
+
+    pbkey = None if tmp else ratchets.pop("user_ratchet")
 
     return ratchets, pbkey
 

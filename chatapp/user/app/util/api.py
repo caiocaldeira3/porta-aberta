@@ -12,7 +12,7 @@ from cryptography.hazmat.primitives.asymmetric.x25519 import X25519PrivateKey
 from cryptography.hazmat.primitives.asymmetric.ed25519 import Ed25519PrivateKey
 
 base_path = Path(__file__).resolve().parent.parent
-dotenv.load_dotenv(base_path / ".env", override=False)
+dotenv.load_dotenv(base_path / ".env", override=True)
 
 import app.util.crypto as crypto
 
@@ -28,18 +28,17 @@ class Api:
     base_url: str = dc.field(init=False, default="http://0.0.0.0:5000")
     headers_client: dict = dc.field(init=False, default=None)
     headers_user: dict = dc.field(init=False, default=None)
-    device_url: str = dc.field(init=False, default=None)
 
     user_id: int = dc.field(init=False, default=None)
     id_key: X25519PrivateKey = dc.field(init=False, default=None)
     sgn_key: X25519PrivateKey = dc.field(init=False, default=None)
     ed_key: Ed25519PrivateKey = dc.field(init=False, default=None)
 
-    def __init__ (self, logged_in: str = None, port: str = None) -> None:
-        self.device_url = f"http://192.168.1.43:{port if port is not None else 3030}"
+    def __init__ (self, logged_in: str = None) -> None:
         self.headers_client = {
             "Param-Auth": os.environ["CHAT_SECRET"]
         }
+        self.headers_user = self.headers_client
 
         if logged_in == "logged_in" and os.environ["USER_ID"] != -1:
             self.login()
@@ -64,10 +63,10 @@ class Api:
         self.ed_key = None
 
         self.update_header_user(logout=True)
-        self._update_enviroment("USER_ID", -1)
 
     def _update_enviroment (self, key: str, value: str) -> None:
         environ_regex = re.compile(f"(?<={key}=).*")
+        os.environ[key] = str(value)
 
         with fileinput.FileInput(".env", inplace=True, backup=".bak") as env:
             for line in env:
@@ -155,13 +154,21 @@ class Api:
         try:
             owner = User.query.filter_by(id=self.user_id).one()
 
-            db_users = [ User(telephone=user) for user in users ]
+            db_users = []
+            for user in users:
+                db_user = User.query.filter_by(telephone=user).first()
+                if db_user is None:
+                    db_user = User(telephone=user)
+
+                    db.session.add(db_user)
+
+                db_users.append(db_user)
+
             chat = Chat(
                 name=name,
                 users=db_users,
                 description=description
             )
-            db.session.add_all(db_users)
             db.session.add(chat)
             db.session.commit()
 
@@ -184,6 +191,9 @@ class Api:
             })
 
         except Exception as exc:
+            Chat.query.filter_by(id=chat.id).delete()
+            db.session.commit()
+
             raise exc
 
     def send_message (self, chat_id: int, msg: str) -> None:
@@ -197,30 +207,29 @@ class Api:
                 ratchets, pbkey, bmsg
             )
 
-            response = requests.post(
-                url=f"{self.base_url}/user/send-message/",
-                headers=self.headers_user,
-                json=json.dumps({
-                    "telephone": owner.telephone,
-                    "users": [ chat.users[0].telephone ],
-                    "chat_id": chat.chat_id,
+            sio.send({
+                "Signed-Message": self.sign_message(),
+                "telephone": owner.telephone,
+                "body": {
+                    "sender": {
+                        "telephone": owner.telephone,
+                        "chat_id": chat.id
+                    },
+                    "receiver": {
+                        "telephone": chat.users[0].telephone,
+                        "chat_id": chat.chat_id
+                    },
                     "cipher": crypto.decode_b64(cipher),
                     "dh_ratchet": new_ratchet_pbkey
-                })
-            )
+                }
+            })
 
-            resp_json = response.json()
-            if resp_json["status"] == "ok":
-                print(resp_json["msg"])
-
-                ratchets.pop("snd_ratchet", None)
-                ratchets["user_ratchet"] = resp_json["data"]["dh_ratchets"][0]
-                for ratchet_name, ratchet in ratchets.items():
-                    crypto.save_ratchet(chat_id, ratchet_name, ratchet)
-
-            else:
-                print ("Message not delivered")
+            ratchets.pop("snd_ratchet", None)
+            ratchets.pop("user_ratchet", None)
+            for ratchet_name, ratchet in ratchets.items():
+                crypto.save_ratchet(chat_id, ratchet_name, ratchet, tmp=True)
 
         except Exception as exc:
-            print("Message not delivered")
+            print(exc)
+
             raise exc

@@ -17,7 +17,7 @@ RequestData = Union[str, dict[str, str]]
 @authenticate_user()
 def handle_create_chat (sid: str, data: dict[str, RequestData]) -> None:
     try:
-        owner = User.query.filter_by(telephone=data["telephone"]).one()
+        owner = User.query.filter_by(telephone=data["owner"]["telephone"]).one()
         users = User.query.filter(User.telephone.in_(data["users"])).all()
 
         data.pop("users", None)
@@ -35,9 +35,13 @@ def handle_create_chat (sid: str, data: dict[str, RequestData]) -> None:
 @authenticate_user()
 def handle_confirm_create_chat (sid: str, data: dict[str, RequestData]) -> None:
     try:
-        owner = User.query.filter_by(telephone=data.pop("owner")).one()
+        owner = User.query.filter_by(telephone=data["owner"]["telephone"]).one()
         for device in owner.devices:
-            emit("confirm-create-chat", data, to=device.socket_id)
+            emit("confirm-create-chat", {
+                "status": "ok",
+                "msg": "Chat created between users {owner.telephone} and {user_tel}",
+                "data": data
+            }, to=device.socket_id)
 
     except Exception as exc:
         print(exc)
@@ -49,15 +53,8 @@ def handle_confirm_create_chat (sid: str, data: dict[str, RequestData]) -> None:
 @authenticate_user()
 def handle_message (sid: str, data: dict[str, RequestData]) -> None:
     try:
-        users = User.query.filter(User.telephone.in_(data["users"])).all()
-        if len(users) == 0:
-            raise Exception
-
-        data["owner"] = data.pop("telephone", None)
-        data.pop("users", None)
-
-        for user in users:
-            api.send_message(user, data)
+        user = User.query.filter_by(telephone=data["receiver"]["telephone"]).one()
+        api.send_message(user, data)
 
     except Exception as exc:
         print(exc)
@@ -69,9 +66,15 @@ def handle_message (sid: str, data: dict[str, RequestData]) -> None:
 @authenticate_user()
 def handle_confirm_message (sid: str, data: dict[str, RequestData]) -> None:
     try:
-        owner = User.query.filter_by(telephone=data["owner"]).one()
-        for device in owner.devices:
-            emit("confirm-message", data, to=device.socket_id)
+        sender = User.query.filter_by(telephone=data["sender"]["telephone"]).one()
+        rcv_tel = data["receiver"]["telephone"]
+
+        for device in sender.devices:
+            emit("confirm-message", {
+                "status": "ok",
+                "msg": f"Message sent from {sender.telephone} to {rcv_tel}",
+                "data": data
+            }, to=device.socket_id)
 
     except Exception as exc:
         print(exc)
