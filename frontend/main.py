@@ -18,7 +18,7 @@ def index():
         email = request.form["user"]
         passwd = request.form["passwd"]
         print(email)
-        return redirect(url_for('profile'))
+        return redirect(url_for('home'))
 
     return render_template('index.html')
 ######################3
