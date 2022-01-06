@@ -5,7 +5,7 @@ from app.models import user_chat
 class User (db.Model):
 
     __tablename__   : str = "user"
-    id         : db.Integer = db.Column(db.Integer, primary_key=True)
+    id              : db.Integer = db.Column(db.Integer, primary_key=True)
 
     # User Name
     name            : db.String = db.Column(db.String(128), nullable=True)

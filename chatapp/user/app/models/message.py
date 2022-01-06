@@ -4,7 +4,7 @@ from app import db
 class Message (db.Model):
 
     __tablename__   : str = "message"
-    id          : db.Integer = db.Column(db.Integer, primary_key=True)
+    id              : db.Integer = db.Column(db.Integer, primary_key=True)
 
     # Message Content
     message         : db.Text = db.Column(db.Text(500), nullable=False)
