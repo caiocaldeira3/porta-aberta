@@ -28,6 +28,26 @@ Nome: Victor Vieira | Matrícula: 2018054346
 - Feed do usuário com seus posts e posts de amigos;
 - Feed com scroll.
 
+### Rodando o backend
+Para rodar o servidor primeiro é necessário instalar todos os requisitos executando o seguinte comando pip `pip install -r requirements.txt` na pasta raiz deste repositório. Depois disso, e assumindo que está sendo utilizada uma versão do python adequada, 3.9.7+, deve-se caminhar até a pasta <i>server</i> e executar o script run.py a partir do comando `python run.py`. Após isso o servidor deve estar rodando localmente.
+
+Como o melhor jeito que encontrei para armazenar as chaves utilizadas no processo de encriptação foi salvá-las localmente na pasta do repositório, este repositório é o equivalente a um usuário. Caso seja do interesse do testador simular vários usuários conversando, por agora, é aconselhado clonar este repositório quantas vezes tiverem usuários. Isso também significa que pode ser necessário garantir que a seguinte pasta esteja presente no repositório, criando-a, se necessário:
+
+├── zap2-userside  
+│&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;├── scripts  
+│&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;├── user  
+│&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;│&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;├── util  
+│&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;│&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;│&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;├── <b>encrypted_keys*</b>  
+
+Para criar uma sessão, simplesmente rode `python run.py` na pasta <i>user</i>, dentro do repositório, e experimente com os comandos disponíveis:
+  * login
+  * logout
+  * signup
+  * create-chat
+  * send-message
+  * <del>info</del>
+Enquanto todos os dispositivos comuniquem com o mesmo servidor, deve ser possível enviar mensagens entre os repositórios.
+
 ### Variáveis de Ambiente \#TODO
 1. Na raiz do projeto, rode o comando e altere as variáveis de ambiente necessárias no arquivo ```.env```.
     ```bash
