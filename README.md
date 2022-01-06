@@ -45,7 +45,8 @@ Para criar uma sessão, simplesmente rode `python run.py` na pasta <i>user</i>, 
   * signup
   * create-chat
   * send-message
-  * <del>info</del>
+  * <del>info</del>  
+
 Enquanto todos os dispositivos comuniquem com o mesmo servidor, deve ser possível enviar mensagens entre os repositórios.
 
 ### Variáveis de Ambiente \#TODO
