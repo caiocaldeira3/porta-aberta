@@ -25,7 +25,7 @@ from app import sio
 @dc.dataclass()
 class Api:
 
-    base_url: str = dc.field(init=False, default="http://0.0.0.0:5000")
+    base_url: str = dc.field(init=False, default="http://127.0.0.1:5000")
     headers_client: dict = dc.field(init=False, default=None)
     headers_user: dict = dc.field(init=False, default=None)
 

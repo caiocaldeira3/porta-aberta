@@ -18,17 +18,21 @@
 			</p>
 		</div>
 		<form class = "window" style="margin-right:auto;"" method="POST">
+			<div class="warning">
+				{{warning}}
+			</div>
 			<center>
 				<img src="static/images/portaberta.png" style = "width: 168px"><br>
 			</center>
-			<label for="user">Usuário:</label><br>
-			<input id="user" name="user" type="text" />
+			<label for="name">Usuário:</label><br>
+			<input id="name" name="name" type="text" />
 			<br><br>
 			<label for="passwd">Senha:</label><br>
-			<input id="passwd" name="passwd" type="text" />
+			<input id="password" name="password" type="text" />
 			<br><br>
-			<div style="margin-left: 69.5%;">
-			<input type="submit" value="Login">
+			<div class="side-by-side" style="height:20px;">
+			<input name="button" type="submit" value="Register" style="margin-right:auto;">
+			<input name="button" type="submit" value="Login">
 			</div>
 		</form>
 	</div>

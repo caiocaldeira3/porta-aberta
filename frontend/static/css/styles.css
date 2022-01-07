@@ -117,3 +117,25 @@ justify-content: space-around;
 	font-size: 24px; 
 	color: #5d6569;">
 }
+
+.warning{
+	background-color:rgb(120,198,194); 
+	color:white; 
+	text-align: center;
+}
+
+.warning_ok{
+	background-color:#34eb6e; 
+	color:white; 
+	text-align: center;
+	padding:4px;
+	margin-bottom:8px;
+}
+
+.warning_error{
+	background-color:#e86475; 
+	color:white; 
+	text-align: center;
+	padding:4px;
+	margin-bottom:8px;
+}
