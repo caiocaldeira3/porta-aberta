@@ -74,10 +74,9 @@ def index():
             
     return render_template('index.html',warning=warning)
 
-@app.route("/profile",methods=['GET', 'POST'])
+@app.route("/profile")
 def profile():
-    numero = 509
-    return render_template('profile.html',numero=numero)
+    return render_template('profile.html')
 
 if __name__ == '__main__':
     app.run(host='127.0.0.1', port=8080, debug=True)
