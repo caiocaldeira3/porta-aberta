@@ -36,10 +36,12 @@ def handle_create_chat (sid: str, data: dict[str, RequestData]) -> None:
 def handle_confirm_create_chat (sid: str, data: dict[str, RequestData]) -> None:
     try:
         owner = User.query.filter_by(telephone=data["owner"]["telephone"]).one()
+        user_tel = data["user"]["telephone"]
+
         for device in owner.devices:
             emit("confirm-create-chat", {
                 "status": "ok",
-                "msg": "Chat created between users {owner.telephone} and {user_tel}",
+                "msg": f"Chat created between users {owner.telephone} and {user_tel}",
                 "data": data
             }, to=device.socket_id)
 
