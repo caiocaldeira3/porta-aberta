@@ -1,0 +1,141 @@
+body {
+	background-image: linear-gradient(to right, #333d39 , #1d2622);
+	background-position: center;
+	font-family: 'Lexend Deca', sans-serif;
+}
+
+input{
+	font-family: 'Lexend Deca', sans-serif;	
+}
+
+button{
+	font-family: 'Lexend Deca', sans-serif;	
+	font-size: 16px;
+}
+
+.window{
+	background-color: white;
+	margin: 8px;
+	border: 2px solid white;
+	border-radius: 8px;
+	padding: 12px;
+}
+
+.center{
+	position: absolute;
+	top: 50%;
+	left: 50%;
+	-ms-transform: translate(-50%, -50%);
+	transform: translate(-50%, -50%);
+}
+
+.header_logo{
+	width: 108px;
+	height: 108px;
+}
+
+.side-by-side{
+    display:flex;
+	align-items: center;
+    flex-direction:row;
+justify-content: space-around;
+	width:100%;
+	height:100%;
+}
+
+.middle_window{
+	width: 50%;
+	height: 500px;
+}
+
+.left_window{
+	width: 25%;	
+}
+
+.right_window{
+	width: 25%;
+}
+
+.bottom_line{
+	border-bottom: 2px LightSlateGrey solid;
+	margin-top: 0px;
+}	
+
+.footer {
+    position: fixed;
+    bottom: 0;
+	left: 50%;
+	transform: translate(-50%, -50%);
+	text-align: center;
+	font-size: 10px;
+	color: LightSlateGrey;
+}
+
+.main_title {
+	text-align: center;
+	font-family: 'Lexend Deca', sans-serif;
+}
+
+.conversa{
+	padding: 8px;
+	height: 48px;
+	border-radius: 8px;	
+	background-color: #34eb9b;
+	margin-top: 8px;
+}
+
+.perfil{
+	padding-bottom: 8px;	
+	display:flex;
+	align-items: center;
+    flex-direction:row;
+	justify-content: space-around;
+}
+
+.miniature_photo{
+	width:64px; 
+	height:64px; 
+	background-color: #e1ebe7;
+	margin: -8px;
+	margin-left: -24px;
+	border-top-right-radius: 8px;
+	border-bottom-right-radius: 8px;
+	position: relative;
+	top: 12px;
+	left: 100%;
+	-ms-transform: translate(-50%, -50%);
+	transform: translate(-50%, -50%);
+}
+
+.welcome{
+	width:25%;
+	background-color: transparent;
+	border: 0px transparent solid;
+}
+
+.subtitulo{
+	font-size: 24px; 
+	color: #5d6569;">
+}
+
+.warning{
+	background-color:rgb(120,198,194); 
+	color:white; 
+	text-align: center;
+}
+
+.warning_ok{
+	background-color:#34eb6e; 
+	color:white; 
+	text-align: center;
+	padding:4px;
+	margin-bottom:8px;
+}
+
+.warning_error{
+	background-color:#e86475; 
+	color:white; 
+	text-align: center;
+	padding:4px;
+	margin-bottom:8px;
+}

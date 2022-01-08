@@ -4,6 +4,7 @@ import socketio
 # Import flask and template operators
 from flask import Flask
 from flask_cors import CORS
+from flask import render_template, request, redirect, url_for
 
 # Import SQLAlchemy
 from flask_sqlalchemy import SQLAlchemy
@@ -16,16 +17,19 @@ from flask_migrate import Migrate
 # from app.util.responses import NotFoundError
 
 # Define the WSGI application object
-app = Flask(__name__)
+flask_app = Flask(__name__, static_url_path = "/app/static")
+CORS(flask_app)
+
 sio = socketio.Client()
 
 # Configurations
-app.config.from_object('config')
+flask_app.config.from_object("config")
+current_user = ""
 
 # Define the database object which is imported
 # by modules and controllers
-db = SQLAlchemy(app)
-migrate = Migrate(app, db)
+db = SQLAlchemy(flask_app)
+migrate = Migrate(flask_app, db)
 
 # Sample HTTP error handling
 #@app.errorhandler(404)
@@ -39,8 +43,13 @@ api = Api(logged_in=sys.argv[1] if len(sys.argv) >= 2 else None)
 import app.modules.auth.events
 import app.modules.user.events
 
+from app.modules.auth.controller import mod_auth as auth_module
+from app.modules.user.controller import mod_user as user_module
+
 # Register blueprint(s)
 # ..
+flask_app.register_blueprint(auth_module)
+flask_app.register_blueprint(user_module)
 
 # Build the database:
 # This will create the database file using SQLAlchemy
