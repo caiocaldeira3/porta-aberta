@@ -5,10 +5,9 @@ action = ""
 while action != "exit":
     if action == "login":
         api.login()
-        api.ping()
 
     elif action == "logout":
-        api.disconnect()
+        api.logout()
 
     elif action == "signup":
         name = input("username: ")

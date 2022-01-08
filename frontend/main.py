@@ -1,6 +1,17 @@
+from enum import unique
 from flask import Flask, render_template, request, redirect, url_for
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy.sql import func
+
+import sys
+from pathlib import Path
+
+base_path = Path(__file__).resolve().parent.parent
+print(base_path)
+sys.path.append("/home/nathan/Documentos/nn/UFMG/21-2-REMOTO/es/porta-aberta")
+
+from chatapp.user.app import api 
+
 
 db = SQLAlchemy()
 DB_NAME = "database.db"
@@ -12,6 +23,7 @@ db.init_app(app)
 class User(db.Model):
     name = db.Column(db.String(255), primary_key=True)
     password = db.Column(db.String(255))
+   # phone = db.Column(db.String(255), unique=True)
 
 db.create_all(app=app)
 current_user = ""
@@ -70,6 +82,12 @@ def index():
                 warning = register()
         
         if warning == "ok":
+            return redirect(url_for('home'))
+        elif warning == "logged_in":
+            api.login()
+            return redirect(url_for('home'))
+        elif warning == "registered":
+            api.signup(name, name, password)
             return redirect(url_for('home'))
             
     return render_template('index.html',warning=warning)

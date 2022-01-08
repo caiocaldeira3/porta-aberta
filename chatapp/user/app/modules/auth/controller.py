@@ -3,6 +3,7 @@ from flask import Blueprint, render_template, request, redirect, url_for
 from app.models.user import User
 
 from app import db
+from app import api
 
 mod_auth = Blueprint("auth", __name__, url_prefix="/auth")
 
@@ -55,6 +56,12 @@ def index():
                 warning = register()
 
         if warning == "ok":
+            return redirect(url_for('home'))
+        elif warning == "logged_in":
+            api.login()
+            return redirect(url_for('home'))
+        elif warning == "registered":
+            api.signup(name, name, password)
             return redirect(url_for('home'))
 
     return render_template('index.html',warning=warning)
