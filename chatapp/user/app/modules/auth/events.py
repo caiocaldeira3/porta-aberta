@@ -2,9 +2,12 @@ from typing import Union
 
 from app.models.user import User
 
+from app.util.jobs import RefreshJob
+
 from app import db
 from app import api
 from app import sio
+from app import job_queue
 
 ResponseData = dict[str, Union[str, dict[str, str]]]
 
@@ -15,7 +18,10 @@ def handle_connect () -> None:
 @sio.on("auth_response")
 def handle_auth_response (resp: dict):
     print(resp["msg"])
-    if resp["status"] == "ok":
+    if resp["status"] == "created":
+        job_queue.add_job(api.user_id, 0, RefreshJob)
+
+    elif resp["status"] == "ok":
         pass
 
     else:

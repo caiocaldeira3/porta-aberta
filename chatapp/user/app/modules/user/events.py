@@ -4,10 +4,15 @@ from app.models.user import User
 from app.models.chat import Chat
 
 from app.util import crypto
+import app.util.jobs as jobs
+
+from app.models.user import User
+from app.models.chat import Chat
 
 from app import db
 from app import api
 from app import sio
+from app import job_queue
 
 ResponseData = dict[str, Union[str, dict[str, str]]]
 
@@ -66,27 +71,37 @@ def handle_create_chat (resp: ResponseData) -> None:
         crypto.save_ratchet(chat.id, "user_ratchet", user_ratchet)
         crypto.save_ratchet(chat.id, "root_ratchet", root_ratchet)
 
-        sio.emit("confirm-create-chat", {
-            "Signed-Message": api.sign_message(),
-            "telephone": user.telephone,
-            "body": {
-                "owner": {
-                    "telephone": data["owner"]["telephone"],
-                    "chat_id": data["owner"]["chat_id"]
-                },
-                "user": {
-                    "name": user.name,
-                    "telephone": user.telephone,
-                    "chat_id": chat.id,
-                    "keys": {
-                        "dh_ratchet": crypto.public_key(dh_ratchet),
-                        "OPK": crypto.public_key(pvt_keys["OPK"]),
-                        "IK": crypto.public_key(pvt_keys["IK"]),
-                        "SPK": crypto.public_key(pvt_keys["SPK"])
-                    }
-                },
+        try:
+            data = {
+                "Signed-Message": api.sign_message(),
+                "telephone": user.telephone,
+                "body": {
+                    "owner": {
+                        "telephone": data["owner"]["telephone"],
+                        "chat_id": data["owner"]["chat_id"]
+                    },
+                    "user": {
+                        "name": user.name,
+                        "telephone": user.telephone,
+                        "chat_id": chat.id,
+                        "keys": {
+                            "dh_ratchet": crypto.public_key(dh_ratchet),
+                            "OPK": crypto.public_key(pvt_keys["OPK"]),
+                            "IK": crypto.public_key(pvt_keys["IK"]),
+                            "SPK": crypto.public_key(pvt_keys["SPK"])
+                        }
+                    },
+                }
             }
-        })
+            sio.emit("confirm-create-chat", data)
+
+        except ConnectionRefusedError:
+            print(f"Retry to send the confirmation of the creation of the chat {chat.id}")
+            job_queue.add_job(api.user_id, 1, jobs.ConfirmCreateChatJob, data=data)
+
+        except Exception as exc:
+            print(f"Unkown error happened creating the chat {chat.id}")
+            raise exc
 
 @sio.on("confirm-create-chat")
 def confirm_create_chat (resp: ResponseData) -> None:
@@ -154,15 +169,25 @@ def handle_message (resp: ResponseData) -> None:
         for ratchet_name, ratchet in ratchets.items():
             crypto.save_ratchet(chat_id, ratchet_name, ratchet)
 
-        sio.emit("confirm-message", {
-            "Signed-Message": api.sign_message(),
-            "telephone": receiver.telephone,
-            "body": {
-                "sender": data["sender"],
-                "receiver": data["receiver"],
-                "dh_ratchet": crypto.public_key(ratchets["dh_ratchet"])
+        try:
+            data = {
+                "Signed-Message": api.sign_message(),
+                "telephone": receiver.telephone,
+                "body": {
+                    "sender": data["sender"],
+                    "receiver": data["receiver"],
+                    "dh_ratchet": crypto.public_key(ratchets["dh_ratchet"])
+                }
             }
-        })
+            sio.emit("confirm-message", data)
+
+        except ConnectionRefusedError:
+            print("Retry to send the confirmation of the message received")
+            job_queue.add_job(api.user_id, 2, jobs.ConfirmMessageJob, data=data, chat_id=chat_id)
+
+        except Exception as exc:
+            print("Unkown error happened")
+            raise exc
 
 @sio.on("confirm-message")
 def handle_confirm_message (resp: ResponseData) -> None:

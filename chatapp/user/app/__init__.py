@@ -1,4 +1,4 @@
-import sys
+import threading
 import socketio
 
 # Import flask and template operators
@@ -37,8 +37,11 @@ migrate = Migrate(flask_app, db)
 #    return NotFoundError
 
 # Import a module / component using its blueprint handler variable (mod_auth)
+from app.util.jobs import JobQueue
+job_queue = JobQueue()
+
 from app.util.api import Api
-api = Api(logged_in=sys.argv[1] if len(sys.argv) >= 2 else None)
+api = Api()
 
 import app.modules.auth.events
 import app.modules.user.events
@@ -55,3 +58,4 @@ flask_app.register_blueprint(user_module)
 # This will create the database file using SQLAlchemy
 
 db.create_all()
+threading.Thread(target=api.job_handler, daemon=True).start()
