@@ -8,15 +8,16 @@ from app.models.device import Device
 
 from app import db
 from app import sio
+from app import job_queue
 
 @sio.on("connect")
 @authenticate_source()
 @ensure_user()
-def handle_connect (sid: str, data: dict[str, str]) -> None:
+def handle_connect (sid: str, data: dict[str, str], status: str) -> None:
     user = User.query.filter_by(telephone=data["telephone"]).one()
     print(f"connect {sid}")
     emit("auth_response", {
-        "status": "ok",
+        "status": status,
         "msg": "Session Authenticated",
         "data": {
             "user": {

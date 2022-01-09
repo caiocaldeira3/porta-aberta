@@ -1,3 +1,5 @@
+import eventlet
+
 # Import flask and template operators
 from flask import Flask
 from flask_cors import CORS
@@ -25,6 +27,11 @@ sio = SocketIO(flask_app, async_mode="eventlet")
 db = SQLAlchemy(flask_app)
 migrate = Migrate(flask_app, db)
 
+from app.util.jobs import JobQueue
+job_queue = JobQueue()
+
+from app.util.job_handler import job_handler
+
 # Sample HTTP error handling
 #@app.errorhandler(404)
 #def not_found (error: Exception) -> wrappers.Response:
@@ -38,3 +45,7 @@ import app.modules.user.events
 # This will create the database file using SQLAlchemy
 
 db.create_all()
+
+# Create background task to send tasks
+eventlet.monkey_patch()
+sio.start_background_task(job_handler)
