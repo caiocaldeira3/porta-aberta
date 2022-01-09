@@ -1,0 +1,12 @@
+services:
+    serverside:
+        container_name: porta-aberta
+        build: .
+
+        ports:
+            - "5000:5000"
+
+        volumes:
+            - .:/server
+
+        restart: always
