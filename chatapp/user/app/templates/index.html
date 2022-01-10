@@ -17,6 +17,9 @@
 				Tal tal coisas asjdij<br>
 				Tal tal coisas asjdij<br>
 			</p>
+			<form class = "void" style="margin-right:auto;"" method="POST">
+				<input name="button" type="submit" value="Registre-se" style=" margin-left:auto;" class="background-button">
+			</form>
 		</div>
 		<form class = "window" style="margin-right:auto;"" method="POST">
 			<div class="warning">
@@ -27,14 +30,22 @@
 			</center>
 			<label for="name">Usuário:</label><br>
 			<input id="name" name="name" type="text" />
-			<br><br>
+			<div class="spacing"/>
 			<label for="passwd">Senha:</label><br>
 			<input id="password" name="password" type="text" />
-			<br><br>
+			<div class="spacing"/>
+			<div style={{toggle}}>
+				<label for="email">Email:</label><br>
+				<input id="email" name="email" type="text" />
+				<div class="spacing"/>
+				<label for="telephone">Telefone:</label><br>
+				<input id="telephone" name="telephone" type="text" />				
+				<div class="spacing"/>
+			</div>	</div></div></div>
 			<div class="side-by-side" style="height:20px;">
-			<input name="button" type="submit" value="Register" style="margin-right:auto;">
-			<input name="button" type="submit" value="Login">
+				<input name="button" type="submit" value={{button_text}} style=" margin-left:auto; display:visible;">
 			</div>
+
 		</form>
 	</div>
 	<div class="footer">

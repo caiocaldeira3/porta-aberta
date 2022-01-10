@@ -139,3 +139,68 @@ justify-content: space-around;
 	padding:4px;
 	margin-bottom:8px;
 }
+
+.spacing{
+   margin-top: 8px;
+}
+
+.background-button{
+	background-color:transparent;
+	font-size:32px;
+	color:#5d6569;
+	border: #5d6569 3px solid;
+	border-radius: 8px;
+	background:none;
+	outline: none;
+}
+
+.register_toggle{
+	visibility: hidden;
+	display:none;
+}
+
+.void{
+	margin:0px;
+	border:0px;
+	padding:0px;
+	background-color:transparent;
+}
+
+.messages_board{ 
+	height: 80%; 
+	width:auto; 
+	border-radius: 8px;
+	padding:12px;
+	border-bottom-left-radius: 0;
+	border-bottom-right-radius: 0px;
+	border: 2px solid LightSlateGrey;
+	margin-bottom: 8px;
+	display:flex;
+	align-items: center;
+    flex-direction:column;
+}
+
+
+.message_other{ 
+	display:block;
+	width:auto; 
+	border-radius: 8px;
+	padding:12px;
+	border-bottom-left-radius: 0;
+	border: 2px solid LightSlateGrey;
+	margin-bottom: 8px;
+	background-color: #e1ebe7;
+	margin-right: auto;
+}
+
+.message_me{ 
+	display:block;
+	width:auto; 
+	border-radius: 8px;
+	padding:12px;
+	border-bottom-right-radius: 0;
+	border: 2px solid LightSlateGrey;
+	margin-bottom: 8px;
+	background-color: white;
+	margin-left:auto;
+}

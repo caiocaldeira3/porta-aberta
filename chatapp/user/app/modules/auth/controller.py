@@ -21,14 +21,16 @@ def register():
 def index():
 
     warning = ""
-
+    register_active = False
+    visible = {True:"display:visible;",False:"display:none;"}
+    button_text = "Login"
     def register():
 
         records = db.session.query(User).filter_by(name=name).first()
         if records is not None:
             return "usuário ja existe"
 
-        user = User(name = name, password = password)
+        user = User(name = name, password = password, email = email, telephone = telephone)
         db.session.add(user)
         db.session.commit()
         return "registrado"
@@ -46,27 +48,34 @@ def index():
         else:
             warning = "senha incorreta"
             return warning
-
+        
+        
     if request.method == 'POST':
-
-        name = request.form["name"]
-        password = request.form["password"]
-
-        if name == ""  or password == "":
-            warning = "campo vazio"
+        if request.form["button"] == "Registre-se":
+            register_active = True
+            button_text = "Registrar"
         else:
-            if request.form["button"] == "Login":
-                warning = login()
+            button_text = "Login"
+            name = request.form["name"]
+            password = request.form["password"]
+            telephone = request.form["telephone"]
+            email = request.form["email"]
+
+            if name == ""  or password == "":
+                warning = "campo vazio"
             else:
-                warning = register()
+                if request.form["button"] == button_text:
+                    warning = login()
+                else:
+                    warning = register()
 
-        if warning == "ok":
-            return redirect(url_for('home'))
-        elif warning == "logged_in":
-            api.login()
-            return redirect(url_for('home'))
-        elif warning == "registered":
-            api.signup(name, name, password)
-            return redirect(url_for('home'))
-
-    return render_template('index.html',warning=warning)
+            if warning == "ok":
+                return redirect(url_for('user.home'))
+            elif warning == "logged_in":
+                api.login()
+                return redirect(url_for('user.home'))
+            elif warning == "registered":
+                api.signup(name, name, password)
+                return redirect(url_for('user.home'))
+            
+    return render_template('index.html',warning=warning,toggle=visible[register_active],button_text=button_text)

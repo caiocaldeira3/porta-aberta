@@ -1,5 +1,9 @@
-from app import api
+from flask import Blueprint, render_template, request, redirect, url_for
+
 from app.models.user import User
+
+from app import db
+from app import api
 
 action = ""
 while action != "exit":
