@@ -13,6 +13,7 @@ from app import db
 from app import api
 from app import sio
 from app import job_queue
+from app.util.messages import update_messages
 
 ResponseData = dict[str, Union[str, dict[str, str]]]
 
@@ -162,6 +163,7 @@ def handle_message (resp: ResponseData) -> None:
 
         msg = crypto.rcv_msg(ratchets, pbkey, cipher)
         print("decoded message -> ", msg.decode("utf-8"))
+        update_messages(msg.decode("utf-8"))
 
         ratchets.pop("rcv_ratchet", None)
 

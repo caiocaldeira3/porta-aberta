@@ -1,37 +1,34 @@
 from flask import Blueprint, render_template, request, redirect, url_for
 
+from app.util.messages import messages
+
 from app import current_user
 from app import api
-import random
 
 mod_user = Blueprint("user", __name__, url_prefix="/user")
 
-messages = [["message_other","seja bem vindo de volta"],["message_me","^-^ !"]]
 chats = []
 current_chat = ""
 current_user_name = "Usuário"
 
-def update_messages(new_message):
-    messages.append(new_message)
-    
 @mod_user.route('/home',methods=['GET', 'POST'])
 def home():
 
     global current_user
     chat_id = 0
-    
+
     def create_chat(chatname,guestphone):
         chats.append(chatname)
         global current_chat
         current_chat = chatname
         chat_id = api.create_chat(chatname,int(guestphone))
-        
+
     def send_message():
         global message
         message = request.form["message"]
         api.send_message(chat_id, message)
         messages.append(["message_me",message])
-            
+
     def change_chat():
         global current_chat, messages
         current_chat = chats[int(request.form["button"])]
