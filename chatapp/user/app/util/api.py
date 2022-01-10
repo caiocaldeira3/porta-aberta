@@ -15,7 +15,7 @@ from cryptography.hazmat.primitives.asymmetric.ed25519 import Ed25519PrivateKey
 from sqlalchemy.exc import NoResultFound
 from socketio.exceptions import ConnectionError
 
-base_path = Path(__file__).resolve().parent.parent
+base_path = Path(__file__).resolve().parent.parent.parent
 dotenv.load_dotenv(base_path / ".env", override=True)
 
 import app.util.crypto as crypto
@@ -36,7 +36,7 @@ class ConnectionResults (Enum):
 @dc.dataclass()
 class Api:
 
-    base_url: str = dc.field(init=False, default="http://127.0.0.1:5000")
+    base_url: str = dc.field(init=False, default="http://0.0.0.0:5000")
     headers_client: dict = dc.field(init=False, default=None)
     headers_user: dict = dc.field(init=False, default=None)
 
@@ -78,7 +78,7 @@ class Api:
         environ_regex = re.compile(f"(?<={key}=).*")
         os.environ[key] = str(value)
 
-        with fileinput.FileInput(".env", inplace=True, backup=".bak") as env:
+        with fileinput.FileInput(base_path / ".env", inplace=True, backup=".bak") as env:
             for line in env:
                 print(environ_regex.sub(f"{value}", line), end="")
 
@@ -174,12 +174,12 @@ class Api:
 
             return ConnectionResults.SUCESSFUL
 
-        except ConnectionError as exc:
+        except ConnectionError:
             User.query.filter_by(id=user.id).delete()
             db.session.commit()
 
             self._setdown_user()
-            raise exc
+
             return ConnectionResults.FAILED
 
     def create_chat (
@@ -236,7 +236,7 @@ class Api:
         except Exception as exc:
             return ConnectionResults.FAILED
 
-    def send_message (self, chat_id: int, msg: str) -> ConnectionResults:
+    def send_message (self, chat_id: int, msg: str, debug: bool = False) -> ConnectionResults:
         try:
             owner = User.query.filter_by(id=self.user_id).one()
             chat = Chat.query.filter_by(id=chat_id).one()
@@ -246,6 +246,9 @@ class Api:
             cipher, new_ratchet_pbkey = crypto.snd_msg(
                 ratchets, pbkey, bmsg
             )
+
+            if debug:
+                print(f"encoded message -> {cipher}")
 
             data = {
                 "Signed-Message": self.sign_message(),

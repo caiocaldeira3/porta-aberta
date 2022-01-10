@@ -1,4 +1,3 @@
-import flask
 from app import flask_app
 
 if __name__ == "__main__":

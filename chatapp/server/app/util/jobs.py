@@ -121,6 +121,7 @@ class JobQueue:
 
         for job in jobs:
             try:
+                print(f"Job for {job.user_id}")
                 job.solve()
 
             except ConnectionRefusedError as exc:
@@ -162,3 +163,17 @@ class JobQueue:
 
         self.job_dict.pop(user_id, None)
         return True
+
+    def remove_jobs (self, sid: str = None) -> None:
+        if sid is not None:
+            add_user_device_jobs = []
+
+            for job in self.job_dict.get(-1, [ list() ])[MIN_PRIORITY]:
+                if job.data.get("sid", None) != sid:
+                    add_user_device_jobs.append(job)
+
+            if len(add_user_device_jobs) > 0:
+                if self.job_dict.get(-1, None) is None:
+                    self.job_dict[-1] = [ list(), list(), list() ]
+
+                self.job_dict[-1][0] = add_user_device_jobs

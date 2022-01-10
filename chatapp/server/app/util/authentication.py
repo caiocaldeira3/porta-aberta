@@ -1,5 +1,4 @@
 import os
-import threading
 
 from typing import Callable
 from functools import wraps

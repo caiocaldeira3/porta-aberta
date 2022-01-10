@@ -32,4 +32,5 @@ def disconnect () -> None:
     Device.query.filter_by(socket_id=request.sid).delete()
     db.session.commit()
 
+    job_queue.remove_jobs(sid=request.sid)
     print(f"disconnect {request.sid}")

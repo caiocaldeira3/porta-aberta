@@ -37,6 +37,10 @@ from app.util.job_handler import job_handler
 #def not_found (error: Exception) -> wrappers.Response:
 #    return NotFoundError
 
+from app.models.public_keys import OPKey
+from app.models.device import Device
+from app.models.user import User
+
 # Import a module / component using its blueprint handler variable (mod_auth)
 import app.modules.auth.events
 import app.modules.user.events
