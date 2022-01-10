@@ -20,7 +20,7 @@ def home():
     global current_user
     chat_id = 0
     
-    def create_chat():
+    def create_chat(chatname,guestname):
         friendsphone = 999 # esse é o telefone do jaime então ele existe no BD
         names = ["eloise","jessica","amondabinha","raio laser","ferdinando","gilso","soraia","criminoso","policial","advogado"]
         chatname = "conversa com "+ str(random.choice(names))
@@ -42,7 +42,7 @@ def home():
 
     if request.method == 'POST':
         if request.form["button"] == "Novo Chat":
-            create_chat()
+            create_chat(request.form["chatname"],request.form["guestname"])
         elif request.form["button"] == "Enviar":
             send_message()
         else:
