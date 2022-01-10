@@ -5,12 +5,17 @@ from app.models.user import User
 from app import db
 from app import api
 
-mod_auth = Blueprint("auth", __name__, url_prefix="/auth")
+mod_auth = Blueprint("auth", __name__)
+
+def receive_message (chat_id: int, msg: str) -> None:
+    pass
+
+def confirm_create_chat (chat_id: int) -> None:
+    pass
 
 @mod_auth.route("/register")
 def register():
     return render_template("register.html")
-
 
 @mod_auth.route("/",methods=['GET', 'POST'])
 def index():

@@ -24,4 +24,4 @@ atexit.register(exit_handler)
 
 if __name__ == '__main__':
     port = int(os.environ.get('PORT', 5000))
-    sio.run(flask_app, host="0.0.0.0", port=port, use_reloader=False)
+    sio.run(flask_app, host="localhost", port=port, use_reloader=False)
