@@ -6,10 +6,10 @@ import random
 
 mod_user = Blueprint("user", __name__, url_prefix="/user")
 
-messages = [["message_me","hey bom dia"],["message_other","ola amigo"],["message_me","tem muita gente entrando no predio hoje isso me deixa preocupado"]]
+messages = [["message_other","seja bem vindo de volta"],["message_me","^-^ !"]]
 chats = []
 current_chat = ""
-current_user_name = "alex"
+current_user_name = "Usuário"
 
 def update_messages(new_message):
     messages.append(new_message)
@@ -20,14 +20,11 @@ def home():
     global current_user
     chat_id = 0
     
-    def create_chat():
-        friendsphone = 999 # esse é o telefone do jaime então ele existe no BD
-        names = ["eloise","jessica","amondabinha","raio laser","ferdinando","gilso","soraia","criminoso","policial","advogado"]
-        chatname = "conversa com "+ str(random.choice(names))
+    def create_chat(chatname,guestphone):
         chats.append(chatname)
         global current_chat
         current_chat = chatname
-        chat_id = api.create_chat(chatname,friendsphone)
+        chat_id = api.create_chat(chatname,int(guestphone))
         
     def send_message():
         global message
@@ -42,7 +39,7 @@ def home():
 
     if request.method == 'POST':
         if request.form["button"] == "Novo Chat":
-            create_chat()
+            create_chat(request.form["chatname"],request.form["guestphone"])
         elif request.form["button"] == "Enviar":
             send_message()
         else:
